@@ -1,0 +1,1 @@
+java -cp .:./build:./clausie_lib/stanford-parser.jar:./clausie_lib/stanford-parser-2.0.4-models.jar:./clausie_lib/jopt-simple-4.4.jar Example
