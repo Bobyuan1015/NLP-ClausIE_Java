@@ -155,7 +155,7 @@ public class DpUtils {
 
     /** Checks if a given edge holds a complementizer relation */
     public static boolean isComplm(SemanticGraphEdge edge) {
-        return EnglishGrammaticalRelations.COMPLEMENTIZER.equals(edge.getRelation());
+        return EnglishGrammaticalRelations.COMPLEMENTIZER.equals(edge.getRelation());//now, it was changed as MARKER
     }
 
     /** Checks if a given edge holds an agent relation */
@@ -373,6 +373,7 @@ public class DpUtils {
         Set<IndexedWord> exclude = new TreeSet<IndexedWord>();
         List<SemanticGraphEdge> outedges = semanticGraph.getOutEdgesSorted(root);
         for (SemanticGraphEdge edge : outedges) {
+        	System.out.println("exclude  edge="+edge.toString());
             if (containsAncestor(rels, edge)) {
                 exclude.add(edge.getDependent());
             }

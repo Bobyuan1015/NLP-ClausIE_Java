@@ -46,4 +46,7 @@ public abstract class Constituent {
     
     /** Returns a textual representation of the root word of this constituent. */
     public abstract String rootString();
+    public String toString(){
+    	return "Type:"+type;
+    }
 }

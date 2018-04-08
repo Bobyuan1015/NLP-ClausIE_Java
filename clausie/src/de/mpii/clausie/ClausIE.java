@@ -98,8 +98,10 @@ public class ClausIE {
 		clear();
 		List<CoreLabel> tokenizedSentence = tokenizerFactory.getTokenizer(
 				new StringReader(sentence)).tokenize();
+		System.out.println("tokenizedSentence="+tokenizedSentence);
 		lpq.parse(tokenizedSentence); // what about the confidence?
 		depTree = lpq.getBestParse();
+		System.out.println("depTree="+depTree);
 		// use uncollapsed dependencies to facilitate tree creation
 		semanticGraph = ParserAnnotatorUtils
 				.generateUncollapsedDependencies(depTree);
@@ -134,7 +136,8 @@ public class ClausIE {
 	/** Generates propositions from the clauses in the sentence. */
 	public void generatePropositions() {
 		propositions.clear();
-
+//@@@@@@@@xcomp
+		
 		// holds alternative options for each constituents (obtained by
 		// processing coordinated conjunctions and xcomps)
 		final List<List<Constituent>> constituents = new ArrayList<List<Constituent>>();
@@ -150,11 +153,15 @@ public class ClausIE {
 		// let's start
 		for (Clause clause : clauses) {
 			// process coordinating conjunctions
+			System.out.println("clause="+clause+
+					"constituent.size="+clause.constituents.size());
 			constituents.clear();
 			for (int i = 0; i < clause.constituents.size(); i++) {
 				// if(xcomp && clause.subject == i) continue; //An xcomp does
 				// not have an internal subject so should not be processed here
 				Constituent constituent = clause.constituents.get(i);
+				System.out.println("constituent.toString="+constituent.toString()+
+						"   rootString="+constituent.rootString());
 				List<Constituent> alternatives;
 				if (!(xcomp && clause.subject == i)
 						&& constituent instanceof IndexedConstituent
@@ -165,10 +172,14 @@ public class ClausIE {
 						&& ((i == clause.verb && options.processCcAllVerbs) || (i != clause.verb && options.processCcNonVerbs))) {
 					alternatives = ProcessConjunctions.processCC(depTree,
 							clause, constituent, i);
+					
+					System.out.println("1 alternatives.toString="+alternatives.toString()
+							);
 				} else if (!(xcomp && clause.subject == i)
 						&& clause.xcomps.contains(i)) {
 					alternatives = new ArrayList<Constituent>();
 					ClausIE xclausIE = new ClausIE(options);
+					System.out.println("options="+options.toString());
 					xclausIE.semanticGraph = semanticGraph;
 					xclausIE.depTree = depTree;
 					xclausIE.xcomp = true;
@@ -176,6 +187,7 @@ public class ClausIE {
 							.get(i)).getClauses();
 					xclausIE.generatePropositions();
 					for (Proposition p : xclausIE.propositions) {
+						System.out.println("2 Proposition="+p+"  toString="+p.toString());
 						StringBuilder sb = new StringBuilder();
 						String sep = "";
 						for (int j = 0; j < p.constituents.size(); j++) {
@@ -189,10 +201,13 @@ public class ClausIE {
 						alternatives.add(new TextConstituent(sb.toString(),
 								constituent.type));
 					}
+					System.out.println("2 alternatives="+alternatives+"  toString="+alternatives.toString());
 				} else {
 					alternatives = new ArrayList<Constituent>(1);
 					alternatives.add(constituent);
+					System.out.println("21 alternatives="+alternatives+"  toString="+alternatives.toString());
 				}
+				System.out.println("2-2 alternatives="+alternatives+"  toString="+alternatives.toString());
 				constituents.add(alternatives);
 			}
 
@@ -383,14 +398,19 @@ public class ClausIE {
 				dout.print(line);
 				dout.println();
 			}
-		   dout.print("bobDebug1----    parse:"+line);
+		   dout.print("bobDebug1----    parse:"+line+'\n');
 			clausIE.parse(line);
 			if (options.has("v")) {
-				dout.print("# Semantic graph: ");
-				dout.println(clausIE.getSemanticGraph().toFormattedString()
-						.replaceAll("\n", "\n#                ").trim());
+//				dout.print("# Semantic graph: \n"+clausIE.getSemanticGraph());
+//				dout.println(clausIE.getSemanticGraph().toFormattedString()
+//						.replaceAll("\n", "\n#                ").trim());
+				
+				dout.println(clausIE.getSemanticGraph().toList());
+				dout.print("# Semantic graph: \n"+clausIE.getSemanticGraph());
+//				dout.println(clausIE.getSemanticGraph().toString(SemanticGraph.).toString());
+
 			}
-			dout.print("bobDebug2----    detectClauses");
+			dout.print("bobDebug2----    detectClauses\n");
 			clausIE.detectClauses();
 			if (options.has("v")) {
 				dout.print("#   Detected ");
@@ -402,7 +422,7 @@ public class ClausIE {
 					dout.println();
 				}
 			}
-				dout.print("bobDebug3----    generatePropositions");
+				dout.print("bobDebug3----    generatePropositions\n");
 			clausIE.generatePropositions();
 			// dout.print("\t");
 			if (options.has("s")) {
@@ -422,7 +442,7 @@ public class ClausIE {
 				}
 				if (options.has("p")) {
 					dout.print("\t");
-					dout.print("bobDebug4----    print getPCFGScore");
+					dout.print("print getPCFGScore:");
 					dout.print(clausIE.lpq.getPCFGScore());
 				}
 				dout.println();
